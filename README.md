@@ -6,7 +6,7 @@ Use this repository to maintain local skill source content, and use `skills.sh` 
 ## Structure
 
 - `skills/`: all skill packages (`<path-name>/SKILL.md`)
-- `scripts/`: repository tooling (validation and sync)
+- `scripts/`: repository tooling (currently validation)
 - `docs/standards/`: authoring and governance conventions
 - `docs/plans/`: design and implementation planning documents
 
@@ -22,18 +22,6 @@ Validate all skills:
 
 ```bash
 scripts/validate-skills.sh
-```
-
-Sync skills to a local runtime directory:
-
-```bash
-scripts/sync-skills.sh /path/to/target/skills
-```
-
-Example:
-
-```bash
-scripts/sync-skills.sh /tmp/personal-skills-sync
 ```
 
 ## Compatibility

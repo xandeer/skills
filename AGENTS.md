@@ -4,9 +4,9 @@
 This repository is the source of truth for personal skills content.
 Use this repository to maintain local skill source content, and use `skills.sh` to distribute or install those skills into a runtime environment.
 
-- `skills/`: skill packages, one folder per skill (example: `skills/weekly-review/` or `skills/kk-install-device/`).
+- `skills/`: skill packages, one folder per skill (example: `skills/kk-install-device/`).
 - `skills/<path-name>/SKILL.md`: required entry file for each skill.
-- `scripts/`: maintenance tooling (`validate-skills.sh`, `sync-skills.sh`).
+- `scripts/`: maintenance tooling (`validate-skills.sh`).
 - `docs/standards/`: authoring conventions (see `skill-authoring.md`).
 - `docs/plans/`: design and implementation plans.
 - `.github/workflows/`: CI checks (currently skill validation).
@@ -17,7 +17,6 @@ Use lowercase kebab-case for skill folders: `my-skill-name` or `kk-my-skill`.
 No build step is required. Use these commands during development:
 
 - `bash scripts/validate-skills.sh`: validates skill folder names and required `SKILL.md` frontmatter keys.
-- `bash scripts/sync-skills.sh /tmp/personal-skills-sync`: mirrors `skills/` to a target runtime directory.
 - `find skills -maxdepth 2 -type f`: quick inspection of skill files.
 
 Run validation before every commit.
@@ -36,8 +35,6 @@ Run validation before every commit.
 Primary test gate is structural validation:
 
 1. Run `bash scripts/validate-skills.sh`.
-2. Smoke test sync with `bash scripts/sync-skills.sh <target-dir>`.
-3. Confirm copied skill exists at `<target-dir>/<skill-name>/SKILL.md`.
 
 When adding scripts, include at least one runnable example in docs or comments.
 
