@@ -5,10 +5,16 @@ Use this repository to maintain local skill source content, and use `skills.sh` 
 
 ## Structure
 
-- `skills/`: all skill packages (`<skill-name>/SKILL.md`)
+- `skills/`: all skill packages (`<path-name>/SKILL.md`)
 - `scripts/`: repository tooling (validation and sync)
 - `docs/standards/`: authoring and governance conventions
 - `docs/plans/`: design and implementation planning documents
+
+## Naming
+
+- Skill folder paths use lowercase kebab-case, including namespace prefixes such as `kk-install-device`.
+- `SKILL.md` frontmatter `name` may use a namespace prefix such as `kk:install-device`.
+- When namespacing is needed, use `-` in the folder path and `:` in `name`.
 
 ## Local Usage
 

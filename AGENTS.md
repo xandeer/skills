@@ -4,14 +4,14 @@
 This repository is the source of truth for personal skills content.
 Use this repository to maintain local skill source content, and use `skills.sh` to distribute or install those skills into a runtime environment.
 
-- `skills/`: skill packages, one folder per skill (example: `skills/weekly-review/`).
-- `skills/<skill-name>/SKILL.md`: required entry file for each skill.
+- `skills/`: skill packages, one folder per skill (example: `skills/weekly-review/` or `skills/kk-install-device/`).
+- `skills/<path-name>/SKILL.md`: required entry file for each skill.
 - `scripts/`: maintenance tooling (`validate-skills.sh`, `sync-skills.sh`).
 - `docs/standards/`: authoring conventions (see `skill-authoring.md`).
 - `docs/plans/`: design and implementation plans.
 - `.github/workflows/`: CI checks (currently skill validation).
 
-Use lowercase kebab-case for skill folders: `my-skill-name`.
+Use lowercase kebab-case for skill folders: `my-skill-name` or `kk-my-skill`.
 
 ## Build, Test, and Development Commands
 No build step is required. Use these commands during development:
@@ -26,8 +26,9 @@ Run validation before every commit.
 - Prefer ASCII content unless a file already requires Unicode.
 - Use clear, short Markdown sections and actionable wording.
 - In `SKILL.md`, frontmatter must include only:
-  - `name: <skill-name>`
+  - `name: <skill-name-or-namespace:skill-name>`
   - `description: <trigger-focused description>`
+- Folder paths use kebab-case; frontmatter `name` may use `:` for namespacing, for example `skills/kk-install-device/` with `name: kk:install-device`.
 - Keep descriptions focused on **when to use** the skill.
 - Shell scripts should use `bash`, `set -euo pipefail`, and explicit error messages.
 

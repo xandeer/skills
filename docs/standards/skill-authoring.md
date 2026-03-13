@@ -8,6 +8,7 @@ Define conventions for creating and maintaining skills in this repository.
 
 - Skill folders live under `skills/`.
 - Skill folder names must match `^[a-z0-9-]+$`.
+- Use kebab-case for folder paths, including namespace prefixes such as `kk-install-device`.
 - Every skill folder must include `SKILL.md`.
 - Optional subdirectories:
   - `scripts/`
@@ -21,7 +22,11 @@ Define conventions for creating and maintaining skills in this repository.
 - Required keys:
   - `name`
   - `description`
-- `name` should match the folder name.
+- `name` may use a namespace prefix such as `kk:install-device`.
+- When namespacing is needed, use `-` in the folder path and `:` in `name`:
+  - folder path: `skills/kk-install-device/`
+  - frontmatter: `name: kk:install-device`
+- `name` does not need to match the folder name exactly.
 - `description` must describe trigger conditions ("when to use"), not implementation internals.
 
 ## Content Guidance
