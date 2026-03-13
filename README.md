@@ -1,6 +1,7 @@
 # Personal Skills (Source of Truth)
 
-This repository is the canonical source for personal skills content that can be distributed with `skills.sh`.
+This repository is the canonical source for personal skills content.
+Use this repository to maintain local skill source content, and use `skills.sh` to distribute or install those skills into a runtime environment.
 
 ## Structure
 

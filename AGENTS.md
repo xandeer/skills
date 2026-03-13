@@ -2,6 +2,7 @@
 
 ## Project Structure & Module Organization
 This repository is the source of truth for personal skills content.
+Use this repository to maintain local skill source content, and use `skills.sh` to distribute or install those skills into a runtime environment.
 
 - `skills/`: skill packages, one folder per skill (example: `skills/weekly-review/`).
 - `skills/<skill-name>/SKILL.md`: required entry file for each skill.
