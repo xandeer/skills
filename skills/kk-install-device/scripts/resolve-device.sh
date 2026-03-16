@@ -14,9 +14,20 @@ normalize_name() {
   printf '%s' "$1" | tr '[:upper:]' '[:lower:]'
 }
 
+sanitize_display_name() {
+  local display_name="$1"
+
+  if [[ "$display_name" =~ ^(.+[^[:space:]])[[:space:]]{2,}[^[:space:]]+\.coredevice\.local$ ]]; then
+    printf '%s\n' "${BASH_REMATCH[1]}"
+    return 0
+  fi
+
+  printf '%s\n' "$display_name"
+}
+
 lookup_cache() {
   local lookup_name="$1"
-  local cached_name display_name device_uuid
+  local cached_name display_name device_uuid sanitized_display_name sanitized_cached_name
   local partial_match_count=0
   local partial_display_name=""
   local partial_device_uuid=""
@@ -26,14 +37,17 @@ lookup_cache() {
   fi
 
   while IFS=$'\t' read -r cached_name display_name device_uuid; do
-    if [[ "$cached_name" == "$lookup_name" ]]; then
-      printf '%s\t%s\n' "$display_name" "$device_uuid"
+    sanitized_display_name="$(sanitize_display_name "$display_name")"
+    sanitized_cached_name="$(normalize_name "$sanitized_display_name")"
+
+    if [[ "$cached_name" == "$lookup_name" || "$sanitized_cached_name" == "$lookup_name" ]]; then
+      printf '%s\t%s\n' "$sanitized_display_name" "$device_uuid"
       return 0
     fi
 
-    if [[ "$cached_name" == *"$lookup_name"* ]]; then
+    if [[ "$cached_name" == *"$lookup_name"* || "$sanitized_cached_name" == *"$lookup_name"* ]]; then
       partial_match_count=$((partial_match_count + 1))
-      partial_display_name="$display_name"
+      partial_display_name="$sanitized_display_name"
       partial_device_uuid="$device_uuid"
     fi
   done <"$cache_file"
@@ -72,8 +86,13 @@ refresh_cache() {
   fi
 
   while IFS= read -r line; do
-    if [[ "$line" =~ ^(.+[^[:space:]])[[:space:]]+([A-F0-9-]{36})([[:space:]].*)?$ ]]; then
-      display_name="${BASH_REMATCH[1]}"
+    if [[ "$line" =~ ^(.+[^[:space:]])[[:space:]]{2,}([^[:space:]]+)[[:space:]]{2,}([A-F0-9-]{36})([[:space:]].*)?$ ]]; then
+      display_name="$(sanitize_display_name "${BASH_REMATCH[1]}")"
+      device_uuid="${BASH_REMATCH[3]}"
+      normalized_display="$(normalize_name "$display_name")"
+      printf '%s\t%s\t%s\n' "$normalized_display" "$display_name" "$device_uuid" >>"$temp_cache"
+    elif [[ "$line" =~ ^(.+[^[:space:]])[[:space:]]+([A-F0-9-]{36})([[:space:]].*)?$ ]]; then
+      display_name="$(sanitize_display_name "${BASH_REMATCH[1]}")"
       device_uuid="${BASH_REMATCH[2]}"
       normalized_display="$(normalize_name "$display_name")"
       printf '%s\t%s\t%s\n' "$normalized_display" "$display_name" "$device_uuid" >>"$temp_cache"

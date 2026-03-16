@@ -28,13 +28,17 @@ The argument is the device name (for example, `kio`).
    device_display_name="${device_info%%$'\t'*}"
    device_uuid="${device_info#*$'\t'}"
    ```
+   `device_display_name` is the clean Xcode-visible device name.
+   `device_uuid` is the CoreDevice UUID used by `devicectl`.
 
 3. **Build** using the resolved device display name:
    ```bash
    xcodebuild -project <project>.xcodeproj -scheme <scheme> \
+     -derivedDataPath /tmp/<derived-data-dir> \
      -destination 'platform=iOS,name=<device_display_name>' \
      -allowProvisioningUpdates build
    ```
+   Do **not** pass the CoreDevice UUID to `xcodebuild -destination id=...`; Xcode destination IDs and CoreDevice UUIDs are not interchangeable.
 
 4. **Install** using the resolved device UUID and the built app path:
    ```bash
@@ -53,9 +57,11 @@ The argument is the device name (for example, `kio`).
 ## Notes
 
 - Build uses the resolved device **display name**; install and launch use the resolved device **UUID**.
+- In Codex, real-device build / install / launch usually requires elevated permissions because `xcodebuild` and `devicectl` need Xcode caches, signing assets, and CoreDevice services.
 - Cache file: `~/.local/share/kk-install-device/devices.tsv`
 - Refresh rule: only refresh on cache miss.
 - To force a full rebuild of the local cache, delete `~/.local/share/kk-install-device/devices.tsv` and run the helper again.
 - The `.app` output path varies by project. Use the current DerivedData output or `xcodebuild -showBuildSettings` to locate it.
+- `-derivedDataPath /tmp/...` reduces sandbox noise but does not remove the need for elevated permissions.
 - If the app does not appear to update, manually kill and relaunch it on the device.
 - If the bundle ID is unknown, skip the launch step or inspect build settings first.

@@ -72,6 +72,38 @@ EOF
   fi
 }
 
+run_dirty_cache_hit_test() {
+  local temp_home bin_dir stdout_file stderr_file call_log
+  temp_home="$(mktemp -d)"
+  bin_dir="$temp_home/bin"
+  stdout_file="$temp_home/stdout"
+  stderr_file="$temp_home/stderr"
+  call_log="$temp_home/xcrun.log"
+
+  mkdir -p "$bin_dir" "$temp_home/.local/share/kk-install-device"
+  cat >"$bin_dir/xcrun" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "unexpected xcrun invocation" >>"$XCRUN_CALL_LOG"
+exit 99
+EOF
+  chmod +x "$bin_dir/xcrun"
+
+  printf 'kio                 kio.coredevice.local\tkio                 kio.coredevice.local\t%s\n' "$EXPECTED_UUID" >"$temp_home/.local/share/kk-install-device/devices.tsv"
+
+  if ! HOME="$temp_home" PATH="$bin_dir:$PATH" XCRUN_CALL_LOG="$call_log" \
+    bash "$RESOLVER" kio >"$stdout_file" 2>"$stderr_file"; then
+    fail "dirty cache-hit resolver invocation should succeed"
+  fi
+
+  assert_eq "$(printf 'kio\t%s' "$EXPECTED_UUID")" "$(cat "$stdout_file")" \
+    "dirty cache-hit output should sanitize the display name"
+
+  if [[ -f "$call_log" ]]; then
+    fail "dirty cache-hit path should not call xcrun"
+  fi
+}
+
 run_cache_miss_refresh_test() {
   local temp_home bin_dir stdout_file stderr_file call_log cache_file
   temp_home="$(mktemp -d)"
@@ -185,8 +217,47 @@ EOF
     "unresolved device should still persist the refreshed cache"
 }
 
+run_coredevice_hostname_output_test() {
+  local temp_home bin_dir stdout_file stderr_file call_log cache_file
+  temp_home="$(mktemp -d)"
+  bin_dir="$temp_home/bin"
+  stdout_file="$temp_home/stdout"
+  stderr_file="$temp_home/stderr"
+  call_log="$temp_home/xcrun.log"
+  cache_file="$temp_home/.local/share/kk-install-device/devices.tsv"
+
+  mkdir -p "$bin_dir"
+  cat >"$bin_dir/xcrun" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "$*" >>"$XCRUN_CALL_LOG"
+if [[ "${1-}" == "devicectl" && "${2-}" == "list" && "${3-}" == "devices" ]]; then
+  cat <<'OUT'
+Name                                      Hostname                    Identifier
+kio                                       kio.coredevice.local       04832C21-3945-5E10-89A0-F246713D1C8E
+OUT
+  exit 0
+fi
+echo "unexpected xcrun arguments: $*" >&2
+exit 98
+EOF
+  chmod +x "$bin_dir/xcrun"
+
+  if ! HOME="$temp_home" PATH="$bin_dir:$PATH" XCRUN_CALL_LOG="$call_log" \
+    bash "$RESOLVER" "kio" >"$stdout_file" 2>"$stderr_file"; then
+    fail "coredevice hostname output should still resolve successfully"
+  fi
+
+  assert_eq "$(printf 'kio\t%s' "$EXPECTED_UUID")" "$(cat "$stdout_file")" \
+    "coredevice hostname output should keep a clean display name"
+  assert_file_has_line "$cache_file" "$(printf 'kio\tkio\t%s' "$EXPECTED_UUID")" \
+    "coredevice hostname output should persist a clean display name"
+}
+
 run_cache_hit_test
+run_dirty_cache_hit_test
 run_cache_miss_refresh_test
 run_refresh_failure_test
 run_unresolved_after_refresh_test
+run_coredevice_hostname_output_test
 echo "PASS: resolve-device cache hit, refresh, and error scenarios"
